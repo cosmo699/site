@@ -1,76 +1,428 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Моя База</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { display: flex; height: 100vh; background-color: #121212; color: #e0e0e0; }
-        
-        /* Левая панель */
-        .sidebar { width: 250px; background-color: #1e1e1e; border-right: 1px solid #333; display: flex; flex-direction: column; padding: 20px; }
-        .sidebar h2 { font-size: 18px; margin-bottom: 20px; color: #fff; }
-        .sidebar button { background: none; border: none; color: #b0b0b0; text-align: left; padding: 12px 15px; font-size: 16px; cursor: pointer; border-radius: 6px; margin-bottom: 5px; transition: 0.2s; }
-        .sidebar button:hover { background-color: #2a2a2a; color: #fff; }
-        .sidebar button.active { background-color: #3b82f6; color: #fff; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Моя База</title>
+<style>
+  :root{
+    --panel-w: 250px;
+    --glass-bg: rgba(255,255,255,0.06);
+    --glass-border: rgba(255,255,255,0.12);
+    --text: #eaeaea;
+    --text-dim: #a3a3a3;
+    --accent: #7c9eff;
+  }
 
-        /* Центральная область */
-        .content { flex: 1; padding: 40px; overflow-y: auto; background-size: cover; background-position: center; transition: background 0.3s ease; }
-        .tab-content { display: none; background: rgba(18, 18, 18, 0.85); padding: 30px; border-radius: 12px; backdrop-filter: blur(10px); }
-        .tab-content.active { display: block; }
-        h1 { margin-bottom: 20px; color: #fff; }
-        p { color: #ccc; line-height: 1.5; }
-    </style>
+  *{ box-sizing: border-box; margin:0; padding:0; }
+
+  html,body{
+    height:100%;
+    font-family: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    overflow-x:hidden;
+  }
+
+  body{
+    display:flex;
+    min-height:100vh;
+    background: #0e0e12;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    transition: background 0.6s ease;
+  }
+
+  /* ===== Фоны разделов ===== */
+  body[data-section="soft"]{
+    background-image: radial-gradient(circle at 20% 20%, #1b2735 0%, #0d1117 60%);
+    /* Пример подстановки картинки:
+       background-image: url('https://example.com/soft-bg.jpg'); */
+  }
+  body[data-section="films"]{
+    background-image: radial-gradient(circle at 80% 30%, #2b1b3d 0%, #12081a 60%);
+  }
+  body[data-section="links"]{
+    background-image: radial-gradient(circle at 30% 80%, #103021 0%, #08120d 60%);
+  }
+  body[data-section="tops"]{
+    background-image: radial-gradient(circle at 70% 70%, #3d2a12 0%, #1a1206 60%);
+  }
+  body[data-section="misc"]{
+    background-image: radial-gradient(circle at 50% 50%, #2a1418 0%, #120708 60%);
+  }
+
+  /* ===== Боковая панель ===== */
+  .sidebar{
+    width: var(--panel-w);
+    min-width: var(--panel-w);
+    height: 100vh;
+    position: fixed;
+    top:0; left:0;
+    padding: 28px 18px;
+    background: rgba(15,15,20,0.65);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-right: 1px solid var(--glass-border);
+    display:flex;
+    flex-direction:column;
+    gap: 8px;
+    z-index: 100;
+  }
+
+  .sidebar h1{
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    letter-spacing: 0.5px;
+    color: var(--text);
+  }
+
+  .sidebar h1 span{
+    color: var(--accent);
+  }
+
+  .nav-btn{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    text-align:left;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-dim);
+    font-size: 15px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    cursor:pointer;
+    transition: all 0.25s ease;
+  }
+
+  .nav-btn:hover{
+    background: var(--glass-bg);
+    color: var(--text);
+  }
+
+  .nav-btn.active{
+    background: rgba(124,158,255,0.15);
+    border-color: rgba(124,158,255,0.4);
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .nav-btn .dot{
+    width:8px; height:8px;
+    border-radius:50%;
+    background: var(--text-dim);
+    transition: background 0.25s ease;
+  }
+
+  .nav-btn.active .dot{
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+  }
+
+  /* ===== Мобильная кнопка меню ===== */
+  .menu-toggle{
+    display:none;
+    position: fixed;
+    top: 16px; left: 16px;
+    z-index: 200;
+    background: rgba(20,20,25,0.8);
+    border: 1px solid var(--glass-border);
+    color: var(--text);
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    font-size: 20px;
+    cursor:pointer;
+    backdrop-filter: blur(10px);
+  }
+
+  /* ===== Основной контент ===== */
+  .content{
+    margin-left: var(--panel-w);
+    padding: 48px 5vw;
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  .section{
+    display:none;
+    animation: fadeIn 0.5s ease;
+  }
+
+  .section.active{
+    display:block;
+  }
+
+  @keyframes fadeIn{
+    from{ opacity:0; transform: translateY(12px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  .section h2{
+    font-size: 28px;
+    margin-bottom: 6px;
+  }
+
+  .section .subtitle{
+    color: var(--text-dim);
+    margin-bottom: 28px;
+    font-size: 15px;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 18px;
+  }
+
+  .card{
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 14px;
+    padding: 20px;
+    transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+  }
+
+  .card:hover{
+    transform: translateY(-4px);
+    border-color: rgba(124,158,255,0.4);
+    background: rgba(255,255,255,0.09);
+  }
+
+  .card h3{
+    font-size: 17px;
+    margin-bottom: 8px;
+  }
+
+  .card p{
+    color: var(--text-dim);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .card a{
+    display:inline-block;
+    margin-top: 10px;
+    color: var(--accent);
+    text-decoration:none;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .card a:hover{
+    text-decoration: underline;
+  }
+
+  .tops-list{
+    list-style:none;
+    counter-reset: top-counter;
+    max-width: 640px;
+  }
+
+  .tops-list li{
+    counter-increment: top-counter;
+    display:flex;
+    align-items:center;
+    gap: 16px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+  }
+
+  .tops-list li::before{
+    content: counter(top-counter);
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--accent);
+    min-width: 24px;
+  }
+
+  /* ===== Адаптив ===== */
+  @media (max-width: 860px){
+    .menu-toggle{ display:block; }
+
+    .sidebar{
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 150;
+    }
+
+    .sidebar.open{
+      transform: translateX(0);
+    }
+
+    .content{
+      margin-left: 0;
+      padding: 90px 6vw 40px;
+    }
+
+    .overlay{
+      display:none;
+      position: fixed;
+      inset:0;
+      background: rgba(0,0,0,0.5);
+      z-index: 120;
+    }
+
+    .overlay.show{
+      display:block;
+    }
+  }
+</style>
 </head>
-<body>
+<body data-section="soft">
 
-    <div class="sidebar">
-        <h2>Моя База</h2>
-        <button class="tab-btn active" onclick="openTab(event, 'tab1')">Пункт 1: Софт</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab2')">Пункт 2: Фильмы</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab3')">Пункт 3: Ссылки</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab4')">Пункт 4: Топы</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab5')">Пункт 5: Прочее</button>
-    </div>
+  <button class="menu-toggle" id="menuToggle">☰</button>
+  <div class="overlay" id="overlay"></div>
 
-    <div class="content">
-        <div id="tab1" class="tab-content active">
-            <h1>Софт и программы</h1>
-            <p>Здесь будут ссылки на скачивание программ, инструкции и полезные утилиты.</p>
-        </div>
-        <div id="tab2" class="tab-content active" style="display:none;">
-            <h1>Фильмы</h1>
-            <p>Топ просмотренных фильмов, рекомендации и списки на вечер.</p>
-        </div>
-        <div id="tab3" class="tab-content active" style="display:none;">
-            <h1>Полезные ссылки</h1>
-            <p>Важные сайты, закладки и нужные ресурсы.</p>
-        </div>
-        <div id="tab4" class="tab-content active" style="display:none;">
-            <h1>Топы</h1>
-            <p>Различные рейтинги, списки и подборки.</p>
-        </div>
-        <div id="tab5" class="tab-content active" style="display:none;">
-            <h1>Прочее</h1>
-            <p>Любая дополнительная информация и заметки.</p>
-        </div>
-    </div>
+  <nav class="sidebar" id="sidebar">
+    <h1>My<span>Base</span></h1>
 
-    <script>
-        function openTab(evt, tabName) {
-            let contents = document.getElementsByClassName("tab-content");
-            for (let i = 0; i < contents.length; i++) {
-                contents[i].style.display = "none";
-                contents[i].classList.remove("active");
-            }
-            let buttons = document.getElementsByClassName("tab-btn");
-            for (let i = 0; i < buttons.length; i++) {
-                buttons[i].classList.remove("active");
-            }
-            document.getElementById(tabName).style.display = "block";
-            document.getElementById(tabName).classList.add("active");
-            evt.currentTarget.classList.add("active");
+    <button class="nav-btn active" data-target="soft"><span class="dot"></span>Софт</button>
+    <button class="nav-btn" data-target="films"><span class="dot"></span>Фильмы</button>
+    <button class="nav-btn" data-target="links"><span class="dot"></span>Ссылки</button>
+    <button class="nav-btn" data-target="tops"><span class="dot"></span>Топы</button>
+    <button class="nav-btn" data-target="misc"><span class="dot"></span>Прочее</button>
+  </nav>
+
+  <main class="content">
+
+    <section class="section active" id="soft">
+      <h2>Софт</h2>
+      <p class="subtitle">Программы и утилиты, которыми пользуюсь</p>
+      <div class="grid">
+        <div class="card">
+          <h3>VS Code</h3>
+          <p>Основной редактор кода. Легковесный, много расширений.</p>
+          <a href="#">Открыть →</a>
+        </div>
+        <div class="card">
+          <h3>OBS Studio</h3>
+          <p>Запись экрана и стриминг.</p>
+          <a href="#">Открыть →</a>
+        </div>
+        <div class="card">
+          <h3>7-Zip</h3>
+          <p>Архиватор, поддержка всех форматов.</p>
+          <a href="#">Открыть →</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="films">
+      <h2>Фильмы</h2>
+      <p class="subtitle">Что посмотреть или уже посмотрено</p>
+      <div class="grid">
+        <div class="card">
+          <h3>Интерстеллар</h3>
+          <p>Фантастика, космос, время. Обязателен к пересмотру.</p>
+        </div>
+        <div class="card">
+          <h3>Начало</h3>
+          <p>Сны внутри снов. Нолан снова в деле.</p>
+        </div>
+        <div class="card">
+          <h3>Драйв</h3>
+          <p>Эстетика 80-х и минимализм диалогов.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="links">
+      <h2>Ссылки</h2>
+      <p class="subtitle">Полезные сайты и сервисы</p>
+      <div class="grid">
+        <div class="card">
+          <h3>GitHub</h3>
+          <p>Хранилище кода и проектов.</p>
+          <a href="https://github.com" target="_blank">Перейти →</a>
+        </div>
+        <div class="card">
+          <h3>MDN Web Docs</h3>
+          <p>Документация по веб-технологиям.</p>
+          <a href="https://developer.mozilla.org" target="_blank">Перейти →</a>
+        </div>
+        <div class="card">
+          <h3>YouTube</h3>
+          <p>Видео и обучающий контент.</p>
+          <a href="https://youtube.com" target="_blank">Перейти →</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="tops">
+      <h2>Топы</h2>
+      <p class="subtitle">Личные рейтинги</p>
+      <ul class="tops-list">
+        <li>Топ языка программирования — JavaScript</li>
+        <li>Топ ОС — Linux / Arch</li>
+        <li>Топ браузера — Firefox</li>
+        <li>Топ редактора — VS Code</li>
+      </ul>
+    </section>
+
+    <section class="section" id="misc">
+      <h2>Прочее</h2>
+      <p class="subtitle">Заметки, идеи, разное</p>
+      <div class="grid">
+        <div class="card">
+          <h3>Заметка</h3>
+          <p>Сюда можно добавить любые мысли или идеи, которые не влезли в другие разделы.</p>
+        </div>
+        <div class="card">
+          <h3>TODO</h3>
+          <p>Список дел на будущее.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+<script>
+  const buttons = document.querySelectorAll('.nav-btn');
+  const sections = document.querySelectorAll('.section');
+  const body = document.body;
+  const sidebar = document.getElementById('sidebar');
+  const menuToggle = document.getElementById('menuToggle');
+  const overlay = document.getElementById('overlay');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.target;
+
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      sections.forEach(sec => {
+        sec.classList.remove('active');
+        if(sec.id === target){
+          sec.classList.add('active');
         }
-    </script>
+      });
+
+      body.setAttribute('data-section', target);
+
+      // закрыть меню на мобильных после выбора
+      sidebar.classList.remove('open');
+      overlay.classList.remove('show');
+    });
+  });
+
+  menuToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('show');
+  });
+
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+  });
+</script>
+
 </body>
 </html>
