@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Моя База</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { display: flex; height: 100vh; background-color: #121212; color: #e0e0e0; }
+        
+        /* Левая панель */
+        .sidebar { width: 250px; background-color: #1e1e1e; border-right: 1px solid #333; display: flex; flex-direction: column; padding: 20px; }
+        .sidebar h2 { font-size: 18px; margin-bottom: 20px; color: #fff; }
+        .sidebar button { background: none; border: none; color: #b0b0b0; text-align: left; padding: 12px 15px; font-size: 16px; cursor: pointer; border-radius: 6px; margin-bottom: 5px; transition: 0.2s; }
+        .sidebar button:hover { background-color: #2a2a2a; color: #fff; }
+        .sidebar button.active { background-color: #3b82f6; color: #fff; }
+
+        /* Центральная область */
+        .content { flex: 1; padding: 40px; overflow-y: auto; background-size: cover; background-position: center; transition: background 0.3s ease; }
+        .tab-content { display: none; background: rgba(18, 18, 18, 0.85); padding: 30px; border-radius: 12px; backdrop-filter: blur(10px); }
+        .tab-content.active { display: block; }
+        h1 { margin-bottom: 20px; color: #fff; }
+        p { color: #ccc; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Моя База</h2>
+        <button class="tab-btn active" onclick="openTab(event, 'tab1')">Пункт 1: Софт</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab2')">Пункт 2: Фильмы</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab3')">Пункт 3: Ссылки</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab4')">Пункт 4: Топы</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab5')">Пункт 5: Прочее</button>
+    </div>
+
+    <div class="content">
+        <div id="tab1" class="tab-content active">
+            <h1>Софт и программы</h1>
+            <p>Здесь будут ссылки на скачивание программ, инструкции и полезные утилиты.</p>
+        </div>
+        <div id="tab2" class="tab-content active" style="display:none;">
+            <h1>Фильмы</h1>
+            <p>Топ просмотренных фильмов, рекомендации и списки на вечер.</p>
+        </div>
+        <div id="tab3" class="tab-content active" style="display:none;">
+            <h1>Полезные ссылки</h1>
+            <p>Важные сайты, закладки и нужные ресурсы.</p>
+        </div>
+        <div id="tab4" class="tab-content active" style="display:none;">
+            <h1>Топы</h1>
+            <p>Различные рейтинги, списки и подборки.</p>
+        </div>
+        <div id="tab5" class="tab-content active" style="display:none;">
+            <h1>Прочее</h1>
+            <p>Любая дополнительная информация и заметки.</p>
+        </div>
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            let contents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < contents.length; i++) {
+                contents[i].style.display = "none";
+                contents[i].classList.remove("active");
+            }
+            let buttons = document.getElementsByClassName("tab-btn");
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove("active");
+            }
+            document.getElementById(tabName).style.display = "block";
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+    </script>
+</body>
+</html>
